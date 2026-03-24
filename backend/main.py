@@ -21,6 +21,8 @@ from pydantic import BaseModel, HttpUrl, Field
 
 from services.git_service import clone_and_process
 from services.analysis_service import analyze_repository
+from webhook import router as webhook_router
+from repo_processor import get_report, get_all_reports
 
 # ---------------------------------------------------------------------------
 # Configuration & Logging
@@ -58,6 +60,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include the webhook router.
+app.include_router(webhook_router)
 
 # ---------------------------------------------------------------------------
 # In-Memory Job Store
@@ -184,8 +189,10 @@ async def process_repo_analysis(job_id: str, repo_url: str) -> None:
     except Exception as exc:
         job.status = JobStatus.FAILED
         job.completed_at = datetime.now(timezone.utc).isoformat()
-        job.error = str(exc)
-        logger.error("[Job %s] Analysis failed: %s", job_id, exc, exc_info=True)
+        # Use repr() to ensure the error is never an empty string.
+        error_msg = str(exc) or repr(exc)
+        job.error = f"[{type(exc).__name__}] {error_msg}"
+        logger.error("[Job %s] Analysis failed: %s", job_id, repr(exc), exc_info=True)
 
 
 # ---------------------------------------------------------------------------
@@ -302,3 +309,70 @@ async def list_jobs():
         )
         for j in _jobs.values()
     ]
+
+
+# ---------------------------------------------------------------------------
+# Report Endpoints (Webhook-generated analysis results)
+# ---------------------------------------------------------------------------
+
+
+@app.get(
+    "/reports",
+    tags=["Reports"],
+    summary="List all webhook-generated analysis reports",
+)
+async def list_reports():
+    """List all stored analysis reports from webhook pushes.
+
+    Returns:
+        A list of report summaries.
+    """
+    reports = get_all_reports()
+    return [
+        {
+            "repo": r.repo_full_name,
+            "risk_score": r.report.get("repository_overview", {}).get(
+                "overall_risk_score", None
+            ),
+            "last_commit": r.last_commit_sha[:8] if r.last_commit_sha else None,
+            "analysis_count": r.analysis_count,
+            "updated_at": r.updated_at,
+        }
+        for r in reports
+    ]
+
+
+@app.get(
+    "/reports/{owner}/{repo}",
+    tags=["Reports"],
+    summary="Get the full analysis report for a repository",
+)
+async def get_report_by_name(owner: str, repo: str):
+    """Retrieve the full analysis report for a repository.
+
+    Args:
+        owner: The GitHub repository owner.
+        repo: The GitHub repository name.
+
+    Returns:
+        The full report record.
+
+    Raises:
+        HTTPException: 404 if no report exists.
+    """
+    full_name = f"{owner}/{repo}"
+    record = get_report(full_name)
+    if not record:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No report found for '{full_name}'.",
+        )
+    return {
+        "repo": record.repo_full_name,
+        "repo_url": record.repo_url,
+        "last_commit": record.last_commit_sha,
+        "analysis_count": record.analysis_count,
+        "created_at": record.created_at,
+        "updated_at": record.updated_at,
+        "report": record.report,
+    }

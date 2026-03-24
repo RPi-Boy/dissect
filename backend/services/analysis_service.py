@@ -320,3 +320,118 @@ async def analyze_repository(repo_path: Path) -> dict[str, Any]:
     result = await call_llm_with_fallback(codebase_context)
     logger.info("Analysis complete for repository: %s", repo_path)
     return result
+
+
+# ---------------------------------------------------------------------------
+# Incremental Diff Analysis
+# ---------------------------------------------------------------------------
+
+DIFF_ANALYSIS_PROMPT = """You are an elite Application Security Architect. You have previously analyzed a repository and produced the threat model below.
+
+### PREVIOUS THREAT MODEL:
+{previous_report}
+
+### NEW CODE CHANGES (git diff):
+The following files were modified: {changed_files}
+
+```diff
+{diff_text}
+```
+
+### YOUR TASK:
+Analyze ONLY the new code changes above. Determine if they introduce new vulnerabilities, fix existing ones, or create new attack surfaces. Then produce an UPDATED version of the full threat model JSON that merges your new findings with the previous report.
+
+RULES:
+1. If a previous vulnerability is FIXED by the diff, remove it from the vulnerabilities array.
+2. If a NEW vulnerability is introduced, add it with a new sequential ID.
+3. Update the overall_risk_score if the changes meaningfully affect it.
+4. Update the executive_summary to reflect the latest state.
+5. Output ONLY valid JSON matching the original schema. No markdown, no explanation.
+"""
+
+
+async def analyze_diff(
+    previous_report: dict[str, Any],
+    diff_text: str,
+    changed_files: list[str],
+) -> dict[str, Any]:
+    """Perform incremental analysis using only the git diff.
+
+    Sends the previous report and the new diff to the LLM, which
+    merges new findings into an updated threat model.
+
+    Args:
+        previous_report: The last full analysis result (JSON dict).
+        diff_text: The unified diff output between two commits.
+        changed_files: List of file paths that changed.
+
+    Returns:
+        An updated threat model JSON dict.
+    """
+    logger.info("Starting diff analysis for %d changed files", len(changed_files))
+
+    prompt = DIFF_ANALYSIS_PROMPT.format(
+        previous_report=json.dumps(previous_report, indent=2),
+        changed_files=", ".join(changed_files),
+        diff_text=diff_text,
+    )
+
+    client = _get_openai_client()
+    models = [PRIMARY_MODEL, FALLBACK_MODEL]
+    last_error: Exception | None = None
+
+    for i, model in enumerate(models):
+        model_label = "PRIMARY" if i == 0 else "FALLBACK"
+        logger.info("[DIFF-%s] Attempting diff analysis with: %s", model_label, model)
+
+        try:
+            response = await client.chat.completions.create(
+                model=model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a security analysis AI. You MUST respond "
+                            "with ONLY valid JSON. No markdown, no explanation, "
+                            "no code fences. Just the raw JSON object."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=16384,
+            )
+
+            raw_content = response.choices[0].message.content or ""
+            cleaned = raw_content.strip()
+            if cleaned.startswith("```"):
+                cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+
+            result = json.loads(cleaned)
+            logger.info("[DIFF-%s] Diff analysis successful with: %s", model_label, model)
+            return result
+
+        except APITimeoutError as exc:
+            logger.warning("[DIFF-%s] Timeout with %s: %s", model_label, model, exc)
+            last_error = exc
+
+        except APIStatusError as exc:
+            if exc.status_code == 429 or exc.status_code >= 500:
+                logger.warning("[DIFF-%s] HTTP %d from %s", model_label, exc.status_code, model)
+                last_error = exc
+            else:
+                raise
+
+        except json.JSONDecodeError as exc:
+            logger.error("[DIFF-%s] JSON parse failed from %s: %s", model_label, model, exc)
+            last_error = exc
+
+    raise RuntimeError(
+        f"All LLM models failed for diff analysis. Last error: {last_error}"
+    ) from last_error
