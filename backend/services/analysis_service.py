@@ -435,3 +435,64 @@ async def analyze_diff(
     raise RuntimeError(
         f"All LLM models failed for diff analysis. Last error: {last_error}"
     ) from last_error
+
+
+# ---------------------------------------------------------------------------
+# Report Formatting
+# ---------------------------------------------------------------------------
+
+def format_report_as_markdown(report: dict[str, Any]) -> str:
+    """Convert a JSON report dict into a formatted Markdown string.
+
+    Args:
+        report: The analysis JSON dict.
+
+    Returns:
+        A formatted Markdown string.
+    """
+    overview = report.get("repository_overview", {})
+    lang = overview.get("primary_language", "Unknown")
+    risk = overview.get("overall_risk_score", "0")
+    summary = overview.get("executive_summary", "No summary available.")
+
+    md = [
+        f"# Security Analysis Report",
+        f"\n## Repository Overview",
+        f"- **Primary Language**: {lang}",
+        f"- **Overall Risk Score**: {risk}/10",
+        f"\n### Executive Summary",
+        f"{summary}",
+    ]
+
+    # Attack Surfaces
+    surfaces = report.get("attack_surfaces", [])
+    if surfaces:
+        md.append("\n## Attack Surfaces")
+        for s in surfaces:
+            md.append(f"### {s.get('surface_name', 'Unnamed Surface')}")
+            md.append(f"**Files**: {', '.join(s.get('files_involved', []))}")
+            md.append(f"\n{s.get('description', 'No description.')}")
+
+    # Vulnerabilities
+    vulns = report.get("vulnerabilities", [])
+    if vulns:
+        md.append("\n## Vulnerabilities")
+        for v in vulns:
+            md.append(f"### [{v.get('id', 'VULN')}] {v.get('title', 'Untitled Bug')}")
+            md.append(f"- **Severity**: {v.get('severity', 'Unknown')}")
+            md.append(f"- **Location**: `{v.get('file', 'Unknown')}` (Line: {v.get('line_number_estimate', 'N/A')})")
+            md.append(f"\n#### Description\n{v.get('description', 'No description.')}")
+            md.append(f"\n#### Remediation\n{v.get('remediation', 'No remediation.')}")
+
+    # Attack Chains
+    chains = report.get("attack_chains", [])
+    if chains:
+        md.append("\n## Attack Chains")
+        for c in chains:
+            md.append(f"### {c.get('chain_name', 'Unnamed Attack')}")
+            md.append(f"**Impact**: {c.get('impact', 'Unknown')}")
+            md.append("\n#### Steps:")
+            for i, step in enumerate(c.get("steps", []), 1):
+                md.append(f"{i}. {step}")
+
+    return "\n".join(md)

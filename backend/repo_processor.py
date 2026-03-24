@@ -20,12 +20,20 @@ from typing import Any
 from git import Repo, GitCommandError
 
 from diff_analyzer import extract_diff
-from services.analysis_service import analyze_repository, analyze_diff
+from services.analysis_service import (
+    analyze_repository,
+    analyze_diff,
+    format_report_as_markdown,
+)
 
 logger = logging.getLogger(__name__)
 
 # Base directory for temporary repo clones.
 REPO_BASE_DIR = Path("/tmp/dissect/repos")
+
+# Directory for persisted Markdown reports.
+REPORTS_DIR = Path(__file__).resolve().parent / "reports"
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
@@ -155,6 +163,14 @@ async def process_push_event(
 
         # Store/update the report.
         now = datetime.now(timezone.utc).isoformat()
+        
+        # Save Markdown report to disk.
+        report_md = format_report_as_markdown(result)
+        report_filename = repo_full_name.replace("/", "_") + ".md"
+        report_path = REPORTS_DIR / report_filename
+        report_path.write_text(report_md, encoding="utf-8")
+        logger.info("[%s] Saved Markdown report to: %s", repo_full_name, report_path)
+
         if existing_report:
             existing_report.report = result
             existing_report.last_commit_sha = after_sha
