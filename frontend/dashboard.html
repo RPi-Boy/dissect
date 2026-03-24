@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dissect Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="stylesD.css">
+</head>
+<body>
+    <nav class="topbar">
+        <div class="brand">
+            <i class="fa-solid fa-shield-halved brand-icon"></i>
+            <span>DISSECT</span>
+        </div>
+        <ul class="nav-links">
+            <li>HOME</li>
+            <li class="active">DASHBOARD</li>
+            <li>ABOUT US</li>
+        </ul>
+        <div class="top-status">
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        
+        <aside class="panel left-panel">
+            <h2 class="panel-title">THREAT LANDSCAPE OVERVIEW</h2>
+            
+            <div class="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-bg" cx="60" cy="60" r="54"></circle>
+                    <circle class="gauge-progress" cx="60" cy="60" r="54"></circle>
+                </svg>
+                <div class="gauge-text">
+                    <span class="gauge-number">75</span>
+                    <span class="gauge-label">CRITICAL RISK</span>
+                </div>
+            </div>
+
+            <div class="card active-threats">
+                <div>
+                    <h3 class="card-subtitle">ACTIVE THREATS</h3>
+                    <div class="threat-count">12</div>
+                </div>
+                <i class="fa-solid fa-triangle-exclamation warning-icon"></i>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <span class="metric-label">ML CONFIDENCE</span>
+                    <span class="metric-value cyan-text">98.4%</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">CVE LOGIC</span>
+                    <span class="metric-value purple-text">08</span>
+                </div>
+            </div>
+
+            <div class="system-alerts">
+                <h3 class="card-subtitle"><i class="fa-solid fa-gear"></i> SYSTEM ALERTS</h3>
+                <div class="alert-item">
+                    <span class="alert-tag red-text">STAGING_A12:</span> Lateral movement detected in node cluster. High-velocity patterns identified.
+                </div>
+                <div class="alert-item">
+                    <span class="alert-tag cyan-text">AUTH_SESS:</span> Buffer overflow pattern recognized in session manager logic.
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                <div class="user-info">
+                    <div class="user-role">Admin Operator</div>
+                    <div class="user-node">Node ID: VS-ALPHA-01</div>
+                </div>
+                <i class="fa-solid fa-gear settings-icon"></i>
+            </div>
+        </aside>
+
+        <section class="panel center-panel">
+            <div class="code-header">
+                <span class="file-path"><i class="fa-regular fa-file-code"></i> src/auth/session_manager.c</span>
+                <div class="window-controls">
+                    <span class="dot red-dot"></span>
+                    <span class="dot yellow-dot"></span>
+                    <span class="dot green-dot"></span>
+                </div>
+            </div>
+            
+            <div class="code-editor">
+<pre><code><span class="line-num">12</span> <span class="keyword">void</span> <span class="function">handle_request</span>(<span class="keyword">char</span> *input) {
+<span class="line-num">13</span>     <span class="keyword">char</span> buffer[<span class="number">64</span>];
+<span class="line-num">14</span>     <span class="comment">// CRITICAL VULNERABILITY DETECTED BELOW</span>
+<span class="line-num">15</span> 
+<div class="code-highlight"><span class="line-num">16</span>     <span class="function">strcpy</span>(buffer, input);   <span class="error-tag">[OUT-OF-BOUNDS READ/WRITE]</span></div>
+<span class="line-num">17</span>     <span class="keyword">return</span>;
+<span class="line-num">18</span> }</code></pre>
+            </div>
+
+            <div class="attack-map-container">
+                <div class="map-header">
+                    <h2 class="panel-title">ATTACK PROPAGATION MAP</h2>
+                    <span class="live-tag">LIVE EVOLUTION</span>
+                </div>
+                
+                <div class="graph-viz">
+                    <div class="node node-top">
+                        <i class="fa-solid fa-server"></i>
+                        <span>AUTH_CLUSTER</span>
+                    </div>
+                    <div class="node node-center compromised">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </div>
+                    <div class="node node-bottom-left">
+                        <i class="fa-solid fa-database"></i>
+                        <span class="red-text">CORE_DB_01</span>
+                    </div>
+                    <div class="node node-bottom-right">
+                        <i class="fa-solid fa-cloud"></i>
+                        <span>EDGE_NODE</span>
+                    </div>
+                    <svg class="graph-lines" width="100%" height="100%">
+                        <line x1="50%" y1="20%" x2="50%" y2="50%" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                        <line x1="50%" y1="50%" x2="30%" y2="80%" stroke="#ff3366" stroke-width="2"/>
+                        <line x1="50%" y1="50%" x2="70%" y2="80%" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                    </svg>
+                </div>
+
+                <div class="spread-probability">
+                    <div class="spread-header">
+                        <span>LATERAL SPREAD PROBABILITY</span>
+                        <span class="purple-text">HIGH RISK (64%)</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 64%;"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="panel right-panel">
+            <h2 class="panel-title">TECHNICAL SUMMARY</h2>
+            <div class="summary-card text-muted">
+                The use of <span class="highlight-text">strcpy</span> without bounds checking allows an attacker to overwrite the stack, potentially hijacking the Instruction pointer (EIP) and executing arbitrary shellcode in the context of the service.
+            </div>
+
+            <h2 class="panel-title mt-4">REMEDIATION PROTOCOL</h2>
+            <div class="remediation-card">
+                <p class="text-muted text-sm">Replace <span class="highlight-text">strcpy</span> with <span class="highlight-text">strncpy</span> or <span class="highlight-text">strlcpy</span>.</p>
+                <div class="snippet-box">
+<pre><code><span class="function">strncpy</span>(buffer, input, <span class="keyword">sizeof</span>(buffer) - <span class="number">1</span>);
+buffer[<span class="keyword">sizeof</span>(buffer) - <span class="number">1</span>] = <span class="string">'\0'</span>;</code></pre>
+                </div>
+                <p class="text-muted text-xs italic mt-2">Note: Always ensure explicit null-termination when using standard C string functions.</p>
+            </div>
+
+            <div class="simulation-card">
+                <h3 class="sim-title">VULNERABILITY<br><span class="cyan-text">LIVE SIMULATION</span></h3>
+                <p class="text-muted text-sm text-center">Witness the escalation in a safe sandbox.</p>
+                <button class="launch-btn">LAUNCH SIMULATION <i class="fa-solid fa-rocket"></i></button>
+            </div>
+
+            <div class="footer-links">
+                <a href="#"><i class="fa-solid fa-code"></i> VIEW ON GITHUB</a>
+                <a href="#"><i class="fa-regular fa-file-lines"></i> API REFERENCE</a>
+            </div>
+        </aside>
+    </main>
+    <script src="scriptD.js"></script>
+</body>
+</html>
