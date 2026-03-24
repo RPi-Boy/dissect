@@ -14,6 +14,21 @@ body {
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    opacity: 1;
+    transition: opacity 0.35s ease;
+}
+
+body.fade-out {
+    opacity: 0;
+}
+
+body.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.35s ease forwards;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
 }
 
 /* --- Navbar --- */
