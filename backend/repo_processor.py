@@ -25,6 +25,8 @@ from services.analysis_service import (
     analyze_diff,
     format_report_as_markdown,
 )
+from graph_engine.graph_builder import build_repo_graph
+from ml_model.model import get_rapid_risk_score
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +60,8 @@ class ReportRecord:
     repo_full_name: str
     repo_url: str
     report: dict[str, Any] = field(default_factory=dict)
+    graph: dict[str, Any] = field(default_factory=dict)
+    rapid_risk: dict[str, Any] = field(default_factory=dict)
     last_commit_sha: str = ""
     created_at: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
@@ -141,6 +145,29 @@ async def process_push_event(
             clone_url, clone_path, shallow=is_initial,
         ))
 
+        # Compute the rapid ML heuristic score IMMEDIATELY for the dashboard.
+        now = datetime.now(timezone.utc).isoformat()
+        try:
+            rapid_risk = get_rapid_risk_score(clone_path)
+        except Exception as exc:
+            logger.error("[%s] Rapid risk scoring failed: %s", repo_full_name, exc)
+            rapid_risk = {}
+
+        # Save an interim "processing" state so the frontend can query the fast score
+        # while the 60s LLM analysis is running.
+        if existing_report:
+            existing_report.rapid_risk = rapid_risk
+            existing_report.updated_at = now
+        else:
+            _reports[repo_full_name] = ReportRecord(
+                repo_full_name=repo_full_name,
+                repo_url=clone_url,
+                rapid_risk=rapid_risk,
+                last_commit_sha=after_sha,
+                updated_at=now,
+                analysis_count=0, # Mark as 0 until LLM finishes
+            )
+
         if is_initial:
             # Full analysis — same pipeline as POST /analyze.
             result = await analyze_repository(clone_path)
@@ -171,8 +198,16 @@ async def process_push_event(
         report_path.write_text(report_md, encoding="utf-8")
         logger.info("[%s] Saved Markdown report to: %s", repo_full_name, report_path)
 
+        # Build the dependency graph.
+        try:
+            repo_graph = build_repo_graph(clone_path)
+        except Exception as exc:
+            logger.error("[%s] Graph building failed: %s", repo_full_name, exc)
+            repo_graph = {}
+
         if existing_report:
             existing_report.report = result
+            existing_report.graph = repo_graph
             existing_report.last_commit_sha = after_sha
             existing_report.updated_at = now
             existing_report.analysis_count += 1
@@ -181,6 +216,7 @@ async def process_push_event(
                 repo_full_name=repo_full_name,
                 repo_url=clone_url,
                 report=result,
+                graph=repo_graph,
                 last_commit_sha=after_sha,
                 updated_at=now,
                 analysis_count=1,

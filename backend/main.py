@@ -376,3 +376,95 @@ async def get_report_by_name(owner: str, repo: str):
         "updated_at": record.updated_at,
         "report": record.report,
     }
+
+
+@app.get(
+    "/graph/{owner}/{repo}",
+    tags=["Reports"],
+    summary="Get the dependency graph for a repository",
+)
+async def get_graph_by_name(owner: str, repo: str):
+    """Retrieve the dependency graph topology for a repository.
+
+    Args:
+        owner: The GitHub repository owner.
+        repo: The GitHub repository name.
+
+    Returns:
+        The JSON graph (nodes and edges).
+
+    Raises:
+        HTTPException: 404 if no report exists.
+    """
+    full_name = f"{owner}/{repo}"
+    record = get_report(full_name)
+    if not record:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No graph found for '{full_name}'.",
+        )
+    return {
+        "repo": record.repo_full_name,
+        "graph": record.graph,
+    }
+
+
+@app.get(
+    "/rapid-risk/{owner}/{repo}",
+    tags=["Reports"],
+    summary="Get the rapid ML heuristic risk score for a repository",
+)
+async def get_rapid_risk_by_name(owner: str, repo: str):
+    """Retrieve the immediate ML-based risk score for a repository.
+    
+    This is available milliseconds after the clone finishes, long before
+    the deep LLM structural analysis completes.
+
+    Args:
+        owner: The GitHub repository owner.
+        repo: The GitHub repository name.
+
+    Returns:
+        The rapid risk dictionary containing the score and extracted features.
+
+    Raises:
+        HTTPException: 404 if the repo hasn't been cloned yet.
+    """
+    full_name = f"{owner}/{repo}"
+    record = get_report(full_name)
+    if not record or not record.rapid_risk:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No rapid risk score available for '{full_name}' yet.",
+        )
+    return {
+        "repo": record.repo_full_name,
+        "rapid_risk": record.rapid_risk,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Visual Simulation Endpoints (OpenCV)
+# ---------------------------------------------------------------------------
+
+from fastapi.responses import StreamingResponse
+from simulation.attack_simulator import simulate_attack_stream
+
+
+@app.get(
+    "/visualization/stream/{attack_type}",
+    tags=["Simulation", "Visualizations"],
+    summary="Stream an attack animation (M-JPEG)",
+)
+async def stream_visualization(attack_type: str):
+    """Stream a live visualization of a specific threat model element.
+
+    Supported attacks: 'sqli', 'buffer_overflow'
+
+    Returns:
+        A StreamingResponse emitting multipart M-JPEG frames.
+    """
+    return StreamingResponse(
+        simulate_attack_stream(attack_type),
+        media_type="multipart/x-mixed-replace; boundary=frame",
+    )

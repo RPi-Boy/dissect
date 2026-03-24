@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # Model fallback array (OpenRouter slugs).
-PRIMARY_MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
+PRIMARY_MODEL = "minimax/minimax-m2.7"#"nvidia/nemotron-3-super-120b-a12b:free"
 FALLBACK_MODEL = "minimax/minimax-m2.7"
 
 # Hard timeout per API call in seconds.
