@@ -40,6 +40,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    document.getElementById("scanBtn").addEventListener("click", function () {
+
+        const btn = this;
+    
+        // Change button text while waiting
+        btn.innerText = "SCANNING...";
+        btn.disabled = true;
+    
+        // Wait 2 seconds then redirect
+        setTimeout(() => {
+            window.location.href = "dashboard.html";
+        }, 2000);
+    
+    });
+    
     const isValidGitHubUrl = (url) => {
         // Accepts formats like:
         // https://github.com/organization/repo
