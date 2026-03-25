@@ -106,7 +106,7 @@
 <!-- Cyber Grid Background Layer -->
 <div class="fixed inset-0 cyber-grid pointer-events-none"></div>
 <!-- TopAppBar -->
-<nav class="navbar">
+<nav class="navbar font-headline">
     <div class="nav-left">
         <span class="logo">DISSECT</span>
     </div>
@@ -130,14 +130,10 @@
         </svg>
     </div>
 </nav>
-<main class="flex-grow pt-14 pb-16 px-8 max-w-[1512px] mx-auto w-full">
+<main class="flex-grow pt-14 pb-6 px-8 max-w-[1512px] mx-auto w-full">
 <!-- Hero Section -->
 <section class="grid grid-cols-1 md:grid-cols-12 gap-8 mb-12 items-center">
 <div class="md:col-span-8">
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error-container text-on-error-container mb-4">
-<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
-<span class="text-[10px] font-bold tracking-widest uppercase">CRITICAL THREAT</span>
-</div>
 <h1 class="text-6xl font-headline font-bold text-on-surface tracking-tighter leading-tight mb-4">
                     SQL Injection in <span class="text-primary italic">auth_controller.js</span>
 </h1>
@@ -145,7 +141,7 @@
                     Unsanitized user input detected in authentication bypass vector. An attacker can manipulate backend queries to extract sensitive user data via the <code class="bg-surface-container-highest px-2 py-0.5 rounded text-secondary">/v1/auth/login</code> endpoint.
                 </p>
 </div>
-<div class="md:col-span-4 flex justify-center">
+<div class="md:col-span-4 flex flex-col items-center">
 <div class="relative w-64 h-64 flex items-center justify-center">
 <svg class="w-full h-full -rotate-90">
 <circle class="text-surface-container-highest" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-width="8"></circle>
@@ -155,6 +151,9 @@
 <span class="text-5xl font-headline font-extrabold text-on-surface">88</span>
 <span class="text-[10px] tracking-widest uppercase text-on-surface-variant">Risk Score</span>
 </div>
+</div>
+<div class="mt-4">
+<span class="text-sm font-bold tracking-widest uppercase text-error">CRITICAL THREAT</span>
 </div>
 </div>
 </section>
@@ -230,10 +229,10 @@
 </div>
 </div>
 <!-- Analysis Panel -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-<div class="md:col-span-1 space-y-8">
-<div class="surface-container-high rounded-xl p-6 border border-outline-variant/10">
-<div class="flex items-center gap-3 mb-4">
+<div class="w-full flex flex-col items-center">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl mx-auto">
+<div class="surface-container-high rounded-xl p-6 border border-outline-variant/10 text-center">
+<div class="flex flex-col items-center gap-3 mb-4">
 <span class="material-symbols-outlined text-secondary" data-icon="biotech">biotech</span>
 <h3 class="font-headline font-bold text-sm uppercase tracking-tight">Infection Mechanism</h3>
 </div>
@@ -241,39 +240,23 @@
                         The application uses template literals to construct raw SQL strings. This allows for <span class="text-secondary-dim font-bold">' OR '1'='1</span> escape sequences which bypasses identity verification entirely.
                     </p>
 </div>
-<div class="surface-container-high rounded-xl p-6 border border-outline-variant/10">
-<div class="flex items-center gap-3 mb-4">
+<div class="surface-container-high rounded-xl p-6 border border-outline-variant/10 text-center">
+<div class="flex flex-col items-center gap-3 mb-4">
 <span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
 <h3 class="font-headline font-bold text-sm uppercase tracking-tight">Mitigation Strategy</h3>
 </div>
-<ul class="text-xs space-y-3 text-on-surface-variant">
-<li class="flex gap-2">
-<span class="text-primary">•</span>
-                            Implementation of parameterized queries.
-                        </li>
-<li class="flex gap-2">
-<span class="text-primary">•</span>
-                            Transition to TypeORM for abstraction.
-                        </li>
-<li class="flex gap-2">
-<span class="text-primary">•</span>
-                            Rate limiting on /auth endpoints.
-                        </li>
+<ul class="text-xs space-y-3 text-on-surface-variant max-w-md mx-auto text-center">
+<li><span class="text-primary">•</span> Implementation of parameterized queries.</li>
+<li><span class="text-primary">•</span> Transition to TypeORM for abstraction.</li>
+<li><span class="text-primary">•</span> Rate limiting on /auth endpoints.</li>
 </ul>
-</div>
-</div>
-<div class="md:col-span-2">
-<div class="w-full h-full min-h-[300px] rounded-xl overflow-hidden relative group">
-<div class="absolute bottom-6 left-6 right-6">
-
-</div>
 </div>
 </div>
 </div>
 </main>
 <script src="script.js"></script>
 <!-- FAB -->
-<button class="fixed bottom-12 right-12 flex items-center gap-3 px-8 py-4 bg-primary text-on-primary font-headline font-bold rounded-full shadow-[0_0_20px_rgba(143,245,255,0.4)] hover:shadow-[0_0_30px_rgba(143,245,255,0.6)] active:scale-95 transition-all z-50 group">
+<button class="fixed bottom-20 right-12 flex items-center gap-3 px-8 py-4 bg-primary text-on-primary font-headline font-bold rounded-full shadow-[0_0_20px_rgba(143,245,255,0.4)] hover:shadow-[0_0_30px_rgba(143,245,255,0.6)] active:scale-95 transition-all z-50 group">
 <span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
 <span class="tracking-tight uppercase">GENERATE PULL REQUEST</span>
 <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
@@ -282,7 +265,7 @@
 <footer class="footer">
     <div>
         <div class="footer-logo">DISSECT</div>
-        <div class="copyright">© 2024 DISSECT SECURITY OPS. ALL RIGHTS RESERVED.</div>
+        <div class="copyright">© 2026 DISSECT SECURITY OPS. ALL RIGHTS RESERVED.</div>
     </div>
     <div class="footer-right">
         <a href="#">Privacy Protocol</a>
