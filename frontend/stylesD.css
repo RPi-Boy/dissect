@@ -19,13 +19,16 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    height: 100vh;
+    font-family: "Space Grotesk", sans-serif;
+    background: radial-gradient(circle at 50% 0%, rgba(0,180,220,0.5), transparent 50%), #040608;
+    color: white;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    opacity: 1;
+    transition: opacity 0.35s ease;
 }
 
 /* Typography Utilities */
@@ -41,42 +44,51 @@ body {
 .text-center { text-align: center; }
 
 /* Navigation Bar */
-.topbar {
+.navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
-    background-color: var(--bg-panel);
-    border-bottom: 1px solid var(--border-color);
+    padding: 28px 60px;
 }
 
-.brand {
-    font-weight: 700;
-    letter-spacing: 1px;
+.logo {
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: #7ee8f5;
+    font-size: 18px;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--cyan);
 }
 
-.nav-links {
+.nav-center {
     display: flex;
-    list-style: none;
-    gap: 2rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 1px;
+    gap: 40px;
 }
 
-.nav-links li {
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: color 0.3s;
-}
-
-.nav-links li a {
-    color: inherit;
+.nav-link {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
     text-decoration: none;
+    color: rgba(255, 255, 255, 0.55);
+    padding-bottom: 4px;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: white;
+}
+
+.nav-link.active {
+    color: #7ee8f5;
+    border-bottom: 2px solid #7ee8f5;
+}
+
+.nav-right {
+    display: flex;
+    gap: 24px;
+    align-items: center;
 }
 
 .nav-links li.active, .nav-links li:hover {
