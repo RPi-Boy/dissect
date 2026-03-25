@@ -13,6 +13,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // Optional: Add interaction to the buttons
     const scanBtn = document.querySelector('.scan-btn');
     const repoInput = document.querySelector('.repo-input');
+    const demoBtn = document.querySelector('.demo-btn');
+
+    const DEMO_REPO_URL = 'https://github.com/RPi-Boy/dissect';
+    let demoTypingToken = 0;
+
+    if (demoBtn && repoInput) {
+        demoBtn.addEventListener('click', () => {
+            demoTypingToken += 1;
+            const token = demoTypingToken;
+            repoInput.value = '';
+            repoInput.focus();
+
+            let i = 0;
+            const msPerChar = 32;
+
+            function typeNext() {
+                if (token !== demoTypingToken) return;
+                if (i >= DEMO_REPO_URL.length) return;
+                repoInput.value += DEMO_REPO_URL[i];
+                i += 1;
+                setTimeout(typeNext, msPerChar);
+            }
+
+            typeNext();
+        });
+    }
 
     const isValidGitHubUrl = (url) => {
         // Accepts formats like:
