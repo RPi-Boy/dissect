@@ -40,21 +40,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.getElementById("scanBtn").addEventListener("click", function () {
+    scanBtn.addEventListener('click', () => {
 
-        const btn = this;
+        const repoVal = repoInput.value.trim();
     
-        // Change button text while waiting
-        btn.innerText = "SCANNING...";
-        btn.disabled = true;
+        if (!repoVal) {
+            repoInput.focus();
+            return;
+        }
     
-        // Wait 2 seconds then redirect
+        if (!isValidGitHubUrl(repoVal)) {
+            alert('Please enter a valid GitHub repository URL (e.g. https://github.com/user/repo)');
+            repoInput.style.borderColor = '#ff3366';
+            repoInput.focus();
+            return;
+        }
+    
+        // Valid repo → start scanning animation
+        repoInput.style.borderColor = '';
+        scanBtn.innerHTML = 'SCANNING...';
+        scanBtn.style.opacity = '0.8';
+        scanBtn.disabled = true;
+    
         setTimeout(() => {
             window.location.href = "dashboard.html";
         }, 2000);
     
     });
+    // document.getElementById("scanBtn").addEventListener("click", function () {
+
+    //     const btn = this;
+    //     const repoInput = document.querySelector(".repo-input").value.trim();
     
+    //     // Simple GitHub URL validation
+    //     const githubRegex = /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/;
+    
+    //     if (!githubRegex.test(repoInput)) {
+    //         alert("Please enter a valid GitHub repository URL.\nExample: https://github.com/user/repo");
+    //         return;
+    //     }
+    
+    //     // Change button text while waiting
+    //     btn.innerText = "SCANNING...";
+    //     btn.disabled = true;
+    
+    //     // Wait 2 seconds then redirect
+    //     setTimeout(() => {
+    //         window.location.href = "dashboard.html";
+    //     }, 2000);
+    
+    // });
+
     const isValidGitHubUrl = (url) => {
         // Accepts formats like:
         // https://github.com/organization/repo
@@ -64,33 +100,33 @@ document.addEventListener('DOMContentLoaded', () => {
         return githubRegex.test(url);
     };
 
-    scanBtn.addEventListener('click', () => {
-        const repoVal = repoInput.value.trim();
+    // scanBtn.addEventListener('click', () => {
+    //     const repoVal = repoInput.value.trim();
 
-        if (!repoVal) {
-            repoInput.focus();
-            return;
-        }
+    //     if (!repoVal) {
+    //         repoInput.focus();
+    //         return;
+    //     }
 
-        if (!isValidGitHubUrl(repoVal)) {
-            alert('Please enter a valid GitHub repository URL (e.g. https://github.com/user/repo)');
-            repoInput.style.borderColor = '#ff3366';
-            repoInput.focus();
-            return;
-        }
+    //     if (!isValidGitHubUrl(repoVal)) {
+    //         alert('Please enter a valid GitHub repository URL (e.g. https://github.com/user/repo)');
+    //         repoInput.style.borderColor = '#ff3366';
+    //         repoInput.focus();
+    //         return;
+    //     }
 
-        repoInput.style.borderColor = ''; // reset any previous error state
+    //     repoInput.style.borderColor = ''; // reset any previous error state
 
-        scanBtn.innerHTML = 'SCANNING...';
-        scanBtn.style.opacity = '0.8';
+    //     scanBtn.innerHTML = 'SCANNING...';
+    //     scanBtn.style.opacity = '0.8';
 
-        // Simulate a scan process
-        setTimeout(() => {
-            scanBtn.innerHTML = 'SCAN REPOSITORY →';
-            scanBtn.style.opacity = '1';
-            repoInput.value = '';
-        }, 1500);
-    });
+    //     // Simulate a scan process
+    //     setTimeout(() => {
+    //         scanBtn.innerHTML = 'SCAN REPOSITORY →';
+    //         scanBtn.style.opacity = '1';
+    //         repoInput.value = '';
+    //     }, 1500);
+    // });
 
     // Page transition for nav links
     document.body.classList.add('fade-in');
