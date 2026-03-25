@@ -1,0 +1,17 @@
+# Risk Levels
+RISK_LOW = "LOW"
+RISK_MEDIUM = "MEDIUM"
+RISK_HIGH = "HIGH"
+RISK_CRITICAL = "CRITICAL"
+
+# Vulnerability Types
+VULN_SQLI = "SQL Injection"
+VULN_XSS = "Cross Site Scripting"
+VULN_RCE = "Remote Code Execution"
+
+# Pipeline States
+STATE_CLONED = "CLONED"
+STATE_MASKED = "MASKED"
+STATE_ANALYZED = "ANALYZED"
+STATE_SCORED = "SCORED"
+STATE_COMPLETED = "COMPLETED"
