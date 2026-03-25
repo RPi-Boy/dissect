@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dissect - Live Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="stylesD.css">
+    
+    <style>
+        /* --- Simulation Page Specific Layout --- */
+        .sim-wrapper {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            width: 1000px;
+            max-width: 95%;
+            margin: 0 auto;
+            /* Reusing your glassmorphism from scan-card */
+            padding: 40px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 0 80px rgba(0,200,255,0.06);
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .section-header {
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #7ee8f5;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .live-tag {
+            font-size: 10px;
+            background: rgba(255, 51, 102, 0.15);
+            color: #ff3366;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            font-weight: 600;
+            letter-spacing: 1px;
+            animation: pulse 2s infinite;
+        }
+
+        /* --- Attack Map Graph --- */
+        .graph-viz {
+            position: relative;
+            min-height: 400px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .graph-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            position: absolute;
+            z-index: 2;
+            background: #0a0c10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.8);
+            transform: translate(-50%, -50%);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .node:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            border-color: #7ee8f5;
+        }
+
+        .node i { font-size: 20px; color: #7ee8f5; }
+        
+        /* Node Positions */
+        .node-top { top: 20%; left: 50%; }
+        .node-center { 
+            top: 50%; left: 50%; 
+            border-color: #ff3366; 
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
+            padding: 16px;
+        }
+        .node-center i { color: #ff3366; font-size: 24px; }
+        .node-bottom-left { top: 80%; left: 30%; }
+        .node-bottom-right { top: 80%; left: 70%; }
+        .compromised-text { color: #ff3366; }
+
+        /* --- Lateral Spread Bar --- */
+        .spread-probability {
+            margin-top: 24px;
+        }
+
+        .spread-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .high-risk-text { color: #ff3366; }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7ee8f5, #ff3366);
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+            border-radius: 999px;
+        }
+
+        /* --- Right Column Controls --- */
+        .sim-controls {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .simulation-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(126, 232, 245, 0.2);
+            border-radius: 12px;
+            padding: 40px 24px;
+            text-align: center;
+            box-shadow: inset 0 0 40px rgba(126, 232, 245, 0.02);
+        }
+
+        .sim-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            letter-spacing: 1px;
+        }
+
+        .cyan-text { color: #7ee8f5; }
+        .sim-desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        /* Matches your scan-btn exactly */
+        .launch-btn {
+            width: 100%;
+            height: 56px;
+            background: #7ee8f5;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .launch-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 20px rgba(126, 232, 245, 0.45);
+            background: #ffffff;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive Layout for smaller screens */
+        @media (max-width: 900px) {
+            .sim-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="fade-in">
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved brand-icon"></i>
+            <span>DISSECT</span>
+        </div>
+        <div class="nav-center">
+            <a href="index.html" class="nav-link">HOME</a>
+            <a href="dashboard.html" class="nav-link active">DASHBOARD</a>
+            <a href="report.html" class="nav-link">REPORT</a>
+        </div>
+        <div class="nav-right">
+            <i class="fa-solid fa-bell nav-icon"></i>
+            <i class="fa-solid fa-gear nav-icon"></i>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        
+        <div class="sim-wrapper">
+            <div class="attack-map-container">
+                <div class="section-header">
+                    <span>ATTACK PROPAGATION MAP</span>
+                    <span class="live-tag"><i class="fa-solid fa-circle-dot" style="font-size: 8px; margin-right: 4px;"></i> LIVE</span>
+                </div>
+                
+                <div class="graph-viz">
+                    <div class="node node-top">
+                        <i class="fa-solid fa-server"></i>
+                        <span>AUTH_CLUSTER</span>
+                    </div>
+                    <div class="node node-center compromised">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </div>
+                    <div class="node node-bottom-left">
+                        <i class="fa-solid fa-database"></i>
+                        <span class="compromised-text">CORE_DB_01</span>
+                    </div>
+                    <div class="node node-bottom-right">
+                        <i class="fa-solid fa-cloud"></i>
+                        <span>EDGE_NODE</span>
+                    </div>
+                    
+                    <svg class="graph-lines">
+                        <line x1="50%" y1="20%" x2="50%" y2="50%" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="4"/>
+                        <line x1="50%" y1="50%" x2="30%" y2="80%" stroke="#ff3366" stroke-width="2"/>
+                        <line x1="50%" y1="50%" x2="70%" y2="80%" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="4"/>
+                    </svg>
+                </div>
+
+                <div class="spread-probability">
+                    <div class="spread-header">
+                        <span>LATERAL SPREAD PROBABILITY</span>
+                        <span class="high-risk-text">HIGH RISK (64%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 64%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sim-controls">
+                <div class="simulation-card">
+                    <h3 class="sim-title">VULNERABILITY<br><span class="cyan-text">LIVE SIMULATION</span></h3>
+                    <p class="sim-desc">Initialize the OpenCV engine to witness the escalation paths in a safe, isolated sandbox environment.</p>
+                    <button class="launch-btn">LAUNCH SIMULATION <i class="fa-solid fa-rocket"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dissect Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="stylesD.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved brand-icon"></i>
+            <span>DISSECT</span>
+        </div>
+        <div class="nav-center">
+            <a href="index.html" class="nav-link">HOME</a>
+            <a href="#" class="nav-link active">DASHBOARD</a>
+            <a href="report.html" class="nav-link">REPORT PAGE</a>
+            <a href="#" class="nav-link">ABOUT US</a>
+        </div>
+        <div class="nav-right">
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        
+        <aside class="panel left-panel">
+            <h2 class="panel-title">THREAT LANDSCAPE OVERVIEW</h2>
+            
+            <div class="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-bg" cx="60" cy="60" r="54"></circle>
+                    <circle class="gauge-progress" cx="60" cy="60" r="54"></circle>
+                </svg>
+                <div class="gauge-text">
+                    <span class="gauge-number">75</span>
+                    <span class="gauge-label">CRITICAL RISK</span>
+                </div>
+            </div>
+
+            <div class="card active-threats">
+                <div>
+                    <h3 class="card-subtitle">ACTIVE THREATS</h3>
+                    <div class="threat-count">12</div>
+                </div>
+                <i class="fa-solid fa-triangle-exclamation warning-icon"></i>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <span class="metric-label">ML CONFIDENCE</span>
+                    <span class="metric-value cyan-text">98.4%</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">CVE LOGIC</span>
+                    <span class="metric-value purple-text">08</span>
+                </div>
+            </div>
+
+            <div class="system-alerts">
+                <h3 class="card-subtitle"><i class="fa-solid fa-gear"></i> SYSTEM ALERTS</h3>
+                <div class="alert-item">
+                    <span class="alert-tag red-text">STAGING_A12:</span> Lateral movement detected in node cluster. High-velocity patterns identified.
+                </div>
+                <div class="alert-item">
+                    <span class="alert-tag cyan-text">AUTH_SESS:</span> Buffer overflow pattern recognized in session manager logic.
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                <div class="user-info">
+                    <div class="user-role">Admin Operator</div>
+                    <div class="user-node">Node ID: VS-ALPHA-01</div>
+                </div>
+                <i class="fa-solid fa-gear settings-icon"></i>
+            </div>
+        </aside>
+
+        <section class="panel center-panel">
+            <div class="code-header">
+                <span class="file-path"><i class="fa-regular fa-file-code"></i> src/auth/session_manager.c</span>
+                <div class="window-controls">
+                    <span class="dot red-dot"></span>
+                    <span class="dot yellow-dot"></span>
+                    <span class="dot green-dot"></span>
+                </div>
+            </div>
+            
+            <div class="code-editor">
+<pre><code><span class="line-num">12</span> <span class="keyword">void</span> <span class="function">handle_request</span>(<span class="keyword">char</span> *input) {
+<span class="line-num">13</span>     <span class="keyword">char</span> buffer[<span class="number">64</span>];
+<span class="line-num">14</span>     <span class="comment">// CRITICAL VULNERABILITY DETECTED BELOW</span>
+<span class="line-num">15</span> 
+<div class="code-highlight"><span class="line-num">16</span>     <span class="function">strcpy</span>(buffer, input);   <span class="error-tag">[OUT-OF-BOUNDS READ/WRITE]</span></div>
+<span class="line-num">17</span>     <span class="keyword">return</span>;
+<span class="line-num">18</span> }</code></pre>
+            </div>
+
+            <div class="attack-map-container">
+                <div class="map-header">
+                    <h2 class="panel-title">ATTACK PROPAGATION MAP</h2>
+                    <span class="live-tag">LIVE EVOLUTION</span>
+                </div>
+                
+                <div class="graph-viz">
+                    <div class="node node-top">
+                        <i class="fa-solid fa-server"></i>
+                        <span>AUTH_CLUSTER</span>
+                    </div>
+                    <div class="node node-center compromised">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </div>
+                    <div class="node node-bottom-left">
+                        <i class="fa-solid fa-database"></i>
+                        <span class="red-text">CORE_DB_01</span>
+                    </div>
+                    <div class="node node-bottom-right">
+                        <i class="fa-solid fa-cloud"></i>
+                        <span>EDGE_NODE</span>
+                    </div>
+                    <svg class="graph-lines" width="100%" height="100%">
+                        <line x1="50%" y1="20%" x2="50%" y2="50%" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                        <line x1="50%" y1="50%" x2="30%" y2="80%" stroke="#ff3366" stroke-width="2"/>
+                        <line x1="50%" y1="50%" x2="70%" y2="80%" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+                    </svg>
+                </div>
+
+                <div class="spread-probability">
+                    <div class="spread-header">
+                        <span>LATERAL SPREAD PROBABILITY</span>
+                        <span class="purple-text">HIGH RISK (64%)</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 64%;"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="panel right-panel">
+            <h2 class="panel-title">TECHNICAL SUMMARY</h2>
+            <div class="summary-card text-muted">
+                The use of <span class="highlight-text">strcpy</span> without bounds checking allows an attacker to overwrite the stack, potentially hijacking the Instruction pointer (EIP) and executing arbitrary shellcode in the context of the service.
+            </div>
+
+            <h2 class="panel-title mt-4">REMEDIATION PROTOCOL</h2>
+            <div class="remediation-card">
+                <p class="text-muted text-sm">Replace <span class="highlight-text">strcpy</span> with <span class="highlight-text">strncpy</span> or <span class="highlight-text">strlcpy</span>.</p>
+                <div class="snippet-box">
+<pre><code><span class="function">strncpy</span>(buffer, input, <span class="keyword">sizeof</span>(buffer) - <span class="number">1</span>);
+buffer[<span class="keyword">sizeof</span>(buffer) - <span class="number">1</span>] = <span class="string">'\0'</span>;</code></pre>
+                </div>
+                <p class="text-muted text-xs italic mt-2">Note: Always ensure explicit null-termination when using standard C string functions.</p>
+            </div>
+
+            <div class="simulation-card">
+                <h3 class="sim-title">VULNERABILITY<br><span class="cyan-text">LIVE SIMULATION</span></h3>
+                <p class="text-muted text-sm text-center">Witness the escalation in a safe sandbox.</p>
+                <button class="launch-btn">LAUNCH SIMULATION <i class="fa-solid fa-rocket"></i></button>
+            </div>
+
+            <div class="footer-links">
+                <a href="#"><i class="fa-solid fa-code"></i> VIEW ON GITHUB</a>
+                <a href="#"><i class="fa-regular fa-file-lines"></i> API REFERENCE</a>
+            </div>
+        </aside>
+    </main>
+    <script src="scriptD.js"></script>
+</body>
+</html> -->

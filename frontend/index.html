@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DISSECT | Vulnerability Autonomy</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <span class="logo">DISSECT</span>
+        </div>
+        <div class="nav-center">
+            <a href="#" class="nav-link active">HOME</a>
+            <a href="dashboard.html" class="nav-link">DASHBOARD</a>
+            <a href="report.html" class="nav-link">REPORTS</a>
+        </div>
+        <div class="nav-right">
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12h4l2-9 5 18 3-10h6"/>
+            </svg>
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="hero animate-fade-in">
+            <h1 class="hero-title">VULNERABILITY</h1>
+            <h2 class="hero-subtitle">AUTONOMY.</h2>
+            <p class="hero-description">
+                The high-performance lens for deep-repository security. Reveal architectural flaws, hidden exploits, and dependency leaks before the perimeter is breached.
+            </p>
+        </div>
+
+        <div class="scan-card animate-slide-up">
+            <label class="input-label">TARGET REPOSITORY</label>
+            <div class="input-group">
+                <input type="text" class="repo-input" placeholder="https://github.com/organization/secure-repo">
+                <button id="scanBtn" class="scan-btn">SCAN REPOSITORY →</button>
+            </div>
+            
+            <div class="card-bottom">
+                <div class="bottom-left">
+                    <button type="button" class="demo-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+                            <path d="M13.5 6.5l5 5"></path><path d="M2 22l6.5-6.5"></path><path d="M10.4 17.6a8.5 8.5 0 0 0 6.1-2.5L22 9.6l-5.5-5.5-5.5 5.5a8.5 8.5 0 0 0-2.5 6.1"></path>
+                        </svg>
+                        TRY DEMO REPO
+                    </button>
+                    <span class="no-reg-text">NO REGISTRATION REQUIRED.</span>
+                </div>
+                <div class="bottom-right">
+                    <div class="badge">
+                        <div class="avatars">
+                            <div class="avatar" style="background: #e67e22; z-index: 3;"></div>
+                            <div class="avatar" style="background: #2980b9; z-index: 2;"></div>
+                            <div class="avatar" style="background: #8e44ad; z-index: 1;"></div>
+                        </div>
+                        <span class="badge-text">+12k</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-left">
+            <div class="footer-logo">DISSECT</div>
+            <div class="copyright">© 2026 CLANKERHUNTERS PROTOCOL. ALL ASSETS ENCRYPTED.</div>
+        </div>
+        <div class="footer-right">
+            <a href="#">DOCUMENTATION</a>
+            <a href="#">API REFERENCE</a>
+            <a href="#">STATUS</a>
+            <a href="#">PRIVACY</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
